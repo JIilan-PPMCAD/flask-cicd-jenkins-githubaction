@@ -57,14 +57,13 @@ def test_update_student(client):
 
 def test_delete_student(client):
     """Test deleting a student"""
-    # Use app_context to add a temporary record to the mocked database
     with app.app_context():
         inserted = mongo.db.students.insert_one({
             "name": "Temp User",
             "email": "temp@user.com",
             "course": "Temp Course"
         })
-        # FIX: Convert the BSON ObjectId into a plain string so the HTTP path is evaluated correctly
+        # FIX: Convert the BSON ObjectId into a plain string for the URL path
         student_id = str(inserted.inserted_id)
 
     response = client.get(f'/delete/{student_id}', follow_redirects=True)

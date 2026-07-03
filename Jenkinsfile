@@ -2,19 +2,16 @@ pipeline {
     agent any
 
     environment {
-        // Creates an isolated path structure for Python packages
         VENV_DIR = 'venv'
         PYTHON_BIN = "${WORKSPACE}/${VENV_DIR}/bin/python"
         PIP_BIN = "${WORKSPACE}/${VENV_DIR}/bin/pip"
         PYTEST_BIN = "${WORKSPACE}/${VENV_DIR}/bin/pytest"
         
-        // FIX: Injects dummy variables to keep the Flask initialization loop stable
         MONGO_URI = "mongodb://localhost:27017/student_db"
         SECRET_KEY = "jenkins_automation_secret_key_proof"
     }
 
     triggers {
-        // Satisfies Requirement 4: Automated GitHub builds
         githubPush()
     }
 
@@ -30,6 +27,9 @@ pipeline {
                     else
                         ${PIP_BIN} install flask pytest python-dotenv flask-pymongo certifi
                     fi
+                    
+                    # Ensure mongomock is present for the isolated execution environment
+                    ${PIP_BIN} install mongomock
                 '''
             }
         }
@@ -38,11 +38,12 @@ pipeline {
             steps {
                 echo 'Running Unit Tests...'
                 sh '''
-                    # Executes test_app.py file inside your workspace with configuration hooks
                     if [ -f test_app.py ]; then
-                        ${PYTEST_BIN} test_app.py || echo "Tests logged with warnings"
+                        # Clear wrapper dependencies to ensure real failure visibility
+                        ${PYTEST_BIN} test_app.py
                     else
-                        echo "No test file found, creating dummy pass..."
+                        echo "No test file found, skipping suite..."
+                        exit 1
                     fi
                 '''
             }
@@ -59,12 +60,20 @@ pipeline {
                     echo "MONGO_URI='mongodb://localhost:27017/student_db'" > .env
                     echo "SECRET_KEY='jenkins_automation_secret_key_proof'" >> .env
                     
+                    # FIX: Inject environment context flag to pivot the live app into mock-database execution mode
+                    export FLASK_ENV=staging
+                    
                     # Launches flask app securely in background
                     nohup ${PYTHON_BIN} app.py > flask_app.log 2>&1 &
-                    sleep 3
+                    sleep 5
                     
-                    # Verifies response state
-                    curl -I http://localhost:8000 || true
+                    # Prints runtime startup log directly to Jenkins Console if execution fails
+                    echo "--- Current Application Runtime Log Output ---"
+                    cat flask_app.log || true
+                    echo "----------------------------------------------"
+                    
+                    # Verifies structural response profile via curl health check
+                    curl -f http://localhost:8000 || exit 1
                 '''
             }
         }
