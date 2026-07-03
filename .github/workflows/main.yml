@@ -52,14 +52,12 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.STAGING_SERVER_IP }}
-          # FIX 1: Explicitly defining the username parameter so it stops passing empty profiles
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             mkdir -p /home/ubuntu/staging-app
             cd /home/ubuntu/staging-app
             
-            # FIX 2: Corrected the repository URL so your code pulls properly
             rm -rf .git * || true
             git clone https://github.com .
             git checkout stage
@@ -90,7 +88,6 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.STAGING_SERVER_IP }}
-          # FIX 1: Explicitly added here as well
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
