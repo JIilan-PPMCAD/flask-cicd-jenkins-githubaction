@@ -61,3 +61,4 @@ def test_delete_student(client):
     response = client.get(f'/delete/{student_id}', follow_redirects=True)
     assert response.status_code == 200
     assert b"Temp User" not in response.data
+
