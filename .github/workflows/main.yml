@@ -6,7 +6,7 @@ on:
       - main
       - stage
     tags:
-      - 'v*' # Triggers production deployment on version tags like v1.0.0
+      - 'v*'
   pull_request:
     branches:
       - main
@@ -55,15 +55,29 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/lib/jenkins/workspace/flask-cicd-jenkins-githubaction
-            git fetch origin stage
+            # Create a clean deployment path inside the ubuntu user home directory
+            mkdir -p /home/ubuntu/staging-app
+            cd /home/ubuntu/staging-app
+            
+            # Clean up old tracking and pull fresh source code safely
+            rm -rf .git * || true
+            git clone https://github.com .
             git checkout stage
-            git pull origin stage
+            
+            # Rebuild environment dependencies cleanly
+            python3 -m venv venv
             source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt || pip install flask pytest mongomock flask-pymongo python-dotenv certifi
+            pip install mongomock
+            
+            # Free up port 8000 and spin up background application runtime process
             fuser -k 8000/tcp || true
             export FLASK_ENV=staging
-            nohup python app.py > flask_app.log 2>&1 &
+            nohup python3 app.py > flask_app.log 2>&1 &
             sleep 5
+            
+            # Execute local verification test check
             curl -f http://localhost:8000
 
   deploy-production:
@@ -82,12 +96,20 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/lib/jenkins/workspace/flask-cicd-jenkins-githubaction
-            git fetch --tags
+            mkdir -p /home/ubuntu/production-app
+            cd /home/ubuntu/production-app
+            rm -rf .git * || true
+            git clone https://github.com .
             git checkout ${{ github.ref_name }}
+            
+            python3 -m venv venv
             source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt || pip install flask pytest mongomock flask-pymongo python-dotenv certifi
+            pip install mongomock
+            
             fuser -k 8000/tcp || true
             export FLASK_ENV=production
-            nohup python app.py > flask_prod_app.log 2>&1 &
+            nohup python3 app.py > flask_prod_app.log 2>&1 &
             sleep 5
             curl -f http://localhost:8000

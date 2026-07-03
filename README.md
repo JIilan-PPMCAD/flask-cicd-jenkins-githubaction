@@ -1,134 +1,94 @@
-# Student Registration System
+# Student Registration System & CI/CD Platform
 
-A simple **Flask** web application to manage student records with **MongoDB** as the backend database. Users can **add, view, update, and delete** student details.
-
----
-
-## Features
-
-* List all students on the home page
-* Add a new student
-* Update existing student details
-* Delete a student with confirmation
-* Simple and responsive UI using Bootstrap
+A robust **Flask** web application designed to manage student records, integrated into an automated Continuous Integration and Continuous Deployment (CI/CD) pipeline using **Jenkins** and **GitHub Actions** with **MongoDB** (mocked in-memory via `mongomock` for testing and staging deployment).
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack & Features
 
-* **Backend:** Python, Flask
-* **Database:** MongoDB (via Flask-PyMongo)
-* **Frontend:** HTML, Jinja2 templates, Bootstrap 5
-* **Environment Variables:** Managed via `.env` file
+*   **Core Application:** Python, Flask, Jinja2 Templates, Bootstrap 5.
+*   **Database Management:** MongoDB via `Flask-PyMongo` and `bson`.
+*   **Testing Layer:** In-memory automation database simulation via `mongomock`.
+*   **Automation Infrastructure:** Jenkins Pipeline Workspace Engine, GitHub Webhooks.
+*   **Notification Engine:** Extended Jenkins Mail Delivery Server (SMTP over SSL).
 
 ---
 
-## Setup Instructions
+## 🚀 Automated Pipeline Workflow
 
-### 1. Clone the repository
+1.  **Developer Push:** A commit is pushed to the GitHub repository main branch.
+2.  **Automated Webhook Trigger:** GitHub sends an instantaneous push event notification payload to the live Jenkins automation controller.
+3.  **Build Stage:** Jenkins sets up an isolated Python virtual environment and resolves application dependencies.
+4.  **Test Stage:** Execution of unit tests over an in-memory mock layout structure bypassing physical engine bounds.
+5.  **Deploy Stage:** Automated lifecycle termination of stale processes on port 8000 and subsequent deployment of the updated application build.
+6.  **Notification Block:** Generates email notifications with compressed operational log diagnostics attached (`flask_app.log`).
 
+---
+
+## 🔧 Infrastructure & Platform Configurations
+
+### 1. Cloud Instance & Webhook Engine
+The application runs on an AWS Ubuntu EC2 node. GitHub repositories stream operational triggers directly into the platform core using an active automated webhook pipeline.
+
+![EC2 Server Management](Screenshots/Jenkins-CICD/ec2-jenkins.png)
+![Automated Webhook Configurations on GitHub](Screenshots/Jenkins-CICD/webhook-jenkins-cidjob.png)
+
+### 2. Jenkins Extended Mail Server Integration (Zoho Mail)
+To bypass outbound cloud port blocks and routing filters, Jenkins runs notifications through an encrypted Zoho India SMTP server setup:
+
+*   **SMTP Server Target Address:** `smtp.zoho.in`
+*   **Port Mapping:** `465` (Explicit SSL encryption)
+*   **System Admin Header Identity:** `jilanshaik20@zohomail.in`
+
+![Global Email Parameters Configuration](Screenshots/Jenkins-CICD/mail-config-jenkins.png)
+![Extended Credential and SSL Layer Mapping](Screenshots/Jenkins-CICD/mail-setup-test-config.png)
+
+---
+
+## 📊 Pipeline Monitoring & Results
+
+### 1. Execution Logs & Successful Deployment Results
+The unit tests utilize `mongomock` to evaluate the app state in memory, allowing them to pass successfully in less than a second. Once verified, the build step passes the health check on port 8000.
+
+![Pipeline Executions Overview Dashboard Layout](Screenshots/Jenkins-CICD/Job-statges.png)
+![Job Metrics on Commit Push Event](Screenshots/Jenkins-CICD/Jenkins-pipelinejob-triggered-onpush.png)
+![Console Build History Complete Log Dump Output](Screenshots/Jenkins-CICD/Jenkins-pipelinejob-console-log.png)
+
+---
+
+## 🤖 GitHub Actions Pipeline Monitoring (Upcoming)
+
+This section acts as a technical placeholder for the secondary CI layer managed via internal GitHub workflow runners.
+
+*   **GitHub Actions Workspace Location:** Images tracking individual matrix workflows will be uploaded here.
+*   *[Placeholder for GitHub Action Step 1 Visual layout tracking log screenshots...]*
+*   *[Placeholder for GitHub Action Step 2 Visual layout tracking log screenshots...]*
+
+---
+
+## 💻 Manual Setup & Configurations
+
+### Local Execution Guide
 ```bash
-git clone <your-repo-url>
-cd <repo-folder>
-```
+# Clone the verified repository
+git clone https://github.com
+cd flask-cicd-jenkins-githubaction
 
-### 2. Create and activate a virtual environment
-
-```bash
-python -m venv venv
-# Activate venv
-# Windows:
-venv\Scripts\activate
-# Linux / Mac:
+# Create an isolated python context layer
+python3 -m venv venv
 source venv/bin/activate
-```
 
-### 3. Install dependencies
-
-```bash
+# Resolve dependencies
 pip install -r requirements.txt
+pip install mongomock
+
+# Launch the app
+python3 app.py
 ```
 
-**`requirements.txt` example:**
-
+### Runtime Environment Parameters (`.env`)
+```env
+MONGO_URI='mongodb://localhost:27017/student_db'
+SECRET_KEY='jenkins_automation_secret_key_proof'
+FLASK_ENV='staging'
 ```
-Flask
-Flask-PyMongo
-python-dotenv
-bson
-```
-
-### 4. Configure environment variables
-
-Create a `.env` file in the project root:
-
-```
-MONGO_URI=<your-mongodb-connection-string>
-SECRET_KEY=<your-secret-key>
-```
-
-### 5. Run the application
-
-```bash
-python app.py
-```
-
-Open your browser at: [http://localhost:8000](http://localhost:8000)
-
----
-
-## Project Structure
-
-```
-project/
-│
-├── templates/
-│   ├── base.html
-│   ├── index.html
-│   ├── add_student.html
-│   ├── update_student.html
-│
-├── app.py
-├── requirements.txt
-└── .env
-```
-
----
-
-## Screenshots
-
-**Home Page**
-Lists all students with Edit/Delete buttons.
-- <img width="1902" height="607" alt="image" src="https://github.com/user-attachments/assets/a58a6a6d-4978-4769-8074-232e4d31e69d" />
-
-
-**Add Student**
-Form to add a new student.
-- <img width="1897" height="801" alt="image" src="https://github.com/user-attachments/assets/d65d25c3-ebb5-410a-adb1-e130ad7c5878" />
-
-
-**Update Student**
-Form pre-filled with student details.
-- <img width="1905" height="897" alt="image" src="https://github.com/user-attachments/assets/04febf01-879f-431f-ab07-abcfb993acf1" />
-
-
-
----
-
-## Notes
-
-* Make sure MongoDB is running and accessible via the URI in `.env`
-* Delete action includes a confirmation page to prevent accidental deletion
-* Uses `ObjectId` from `bson` to work with MongoDB document IDs
-* If you use MongoDB Atlas on macOS, install dependencies again (`pip install -r requirements.txt`). This project now uses `certifi` CA bundle explicitly to avoid common TLS certificate verification failures with `pymongo`.
-
----
-
-## License
-
-MIT License
-
----
-
-
-
