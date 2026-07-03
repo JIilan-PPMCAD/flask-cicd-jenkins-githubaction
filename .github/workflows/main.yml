@@ -44,7 +44,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # NEW APPROACH: Uses native Linux SSH keys instead of the appleboy docker container
       - name: Configure SSH Private Key File
         run: |
           mkdir -p ~/.ssh
@@ -54,7 +53,8 @@ jobs:
 
       - name: Execute Remote Deployment Script Over SSH
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.STAGING_SERVER_IP }} << 'EOF'
+          # FIXED: Explicitly typed 'ubuntu' to stop it from failing on the missing secret
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.STAGING_SERVER_IP }} << 'EOF'
             mkdir -p /home/ubuntu/staging-app
             cd /home/ubuntu/staging-app
             
