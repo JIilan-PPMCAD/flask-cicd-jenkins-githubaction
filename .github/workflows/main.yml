@@ -53,13 +53,14 @@ jobs:
 
       - name: Execute Remote Deployment Script Over SSH
         run: |
-          # FIXED: Explicitly typed 'ubuntu' to stop it from failing on the missing secret
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.STAGING_SERVER_IP }} << 'EOF'
             mkdir -p /home/ubuntu/staging-app
             cd /home/ubuntu/staging-app
             
             rm -rf .git * || true
-            git clone https://github.com .
+            
+            # FIXED: Inserted your precise repository clone URL path
+            git clone https://github.com/JIilan-PPMCAD/flask-cicd-jenkins-githubaction.git .
             git checkout stage
             
             python3 -m venv venv
