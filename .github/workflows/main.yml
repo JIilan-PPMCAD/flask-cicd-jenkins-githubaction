@@ -1,0 +1,93 @@
+name: Python Flask CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+    tags:
+      - 'v*' # Triggers production deployment on version tags like v1.0.0
+  pull_request:
+    branches:
+      - main
+      - staging
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python Runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install flask pytest mongomock flask-pymongo python-dotenv certifi
+          fi
+          pip install mongomock
+
+      - name: Run Pytest Suite
+        run: |
+          pytest test_app.py
+
+  deploy-staging:
+    name: Deploy to Staging Environment
+    needs: build-and-test
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Staging Instance via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STAGING_SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/lib/jenkins/workspace/flask-cicd-jenkins-githubaction
+            git fetch origin staging
+            git checkout staging
+            git pull origin staging
+            source venv/bin/activate
+            fuser -k 8000/tcp || true
+            export FLASK_ENV=staging
+            nohup python app.py > flask_app.log 2>&1 &
+            sleep 5
+            curl -f http://localhost:8000
+
+  deploy-production:
+    name: Deploy to Production Environment
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Production Instance via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STAGING_SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/lib/jenkins/workspace/flask-cicd-jenkins-githubaction
+            git fetch --tags
+            git checkout ${{ github.ref_name }}
+            source venv/bin/activate
+            fuser -k 8000/tcp || true
+            export FLASK_ENV=production
+            nohup python app.py > flask_prod_app.log 2>&1 &
+            sleep 5
+            curl -f http://localhost:8000
