@@ -9,6 +9,9 @@ pipeline {
         
         MONGO_URI = "mongodb://localhost:27017/student_db"
         SECRET_KEY = "jenkins_automation_secret_key_proof"
+        
+        // FIX: Stops Jenkins from killing your background Flask server when the stage or step finishes
+        JENKINS_NODE_COOKIE = 'dontKillMe'
     }
 
     triggers {
@@ -60,11 +63,13 @@ pipeline {
                     echo "MONGO_URI='mongodb://localhost:27017/student_db'" > .env
                     echo "SECRET_KEY='jenkins_automation_secret_key_proof'" >> .env
                     
-                    # FIX: Inject environment context flag to pivot the live app into mock-database execution mode
+                    # Inject environment context flag to pivot the live app into mock-database execution mode
                     export FLASK_ENV=staging
                     
                     # Launches flask app securely in background
                     nohup ${PYTHON_BIN} app.py > flask_app.log 2>&1 &
+                    
+                    # Give the server processes an explicit window to bind to port 8000
                     sleep 5
                     
                     # Prints runtime startup log directly to Jenkins Console if execution fails
