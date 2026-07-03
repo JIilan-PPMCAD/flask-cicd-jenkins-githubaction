@@ -7,10 +7,6 @@ on:
       - stage
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - main
-      - stage
 
 jobs:
   build-and-test:
@@ -48,13 +44,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy to Staging Instance via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.STAGING_SERVER_IP }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
+      # NEW APPROACH: Uses native Linux SSH keys instead of the appleboy docker container
+      - name: Configure SSH Private Key File
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.STAGING_SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Execute Remote Deployment Script Over SSH
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.STAGING_SERVER_IP }} << 'EOF'
             mkdir -p /home/ubuntu/staging-app
             cd /home/ubuntu/staging-app
             
@@ -74,38 +74,4 @@ jobs:
             sleep 5
             
             curl -f http://localhost:8000
-
-  deploy-production:
-    name: Deploy to Production Environment
-    needs: build-and-test
-    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Production Instance via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.STAGING_SERVER_IP }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            mkdir -p /home/ubuntu/production-app
-            cd /home/ubuntu/production-app
-            
-            rm -rf .git * || true
-            git clone https://github.com .
-            git checkout ${{ github.ref_name }}
-            
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt || pip install flask pytest mongomock flask-pymongo python-dotenv certifi
-            pip install mongomock
-            
-            fuser -k 8000/tcp || true
-            export FLASK_ENV=production
-            nohup python3 app.py > flask_prod_app.log 2>&1 &
-            sleep 5
-            curl -f http://localhost:8000
+          EOF
