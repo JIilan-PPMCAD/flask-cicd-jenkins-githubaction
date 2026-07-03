@@ -7,6 +7,10 @@ pipeline {
         PYTHON_BIN = "${WORKSPACE}/${VENV_DIR}/bin/python"
         PIP_BIN = "${WORKSPACE}/${VENV_DIR}/bin/pip"
         PYTEST_BIN = "${WORKSPACE}/${VENV_DIR}/bin/pytest"
+        
+        // FIX: Injects dummy variables to keep the Flask initialization loop stable
+        MONGO_URI = "mongodb://localhost:27017/student_db"
+        SECRET_KEY = "jenkins_automation_secret_key_proof"
     }
 
     triggers {
@@ -34,7 +38,7 @@ pipeline {
             steps {
                 echo 'Running Unit Tests...'
                 sh '''
-                    # Executes test_app.py file inside your workspace
+                    # Executes test_app.py file inside your workspace with configuration hooks
                     if [ -f test_app.py ]; then
                         ${PYTEST_BIN} test_app.py || echo "Tests logged with warnings"
                     else
@@ -50,6 +54,10 @@ pipeline {
                 sh '''
                     # Safely stops old app processes running on port 8000
                     fuser -k 8000/tcp || true
+                    
+                    # Generates configuration parameters inside runtime path
+                    echo "MONGO_URI='mongodb://localhost:27017/student_db'" > .env
+                    echo "SECRET_KEY='jenkins_automation_secret_key_proof'" >> .env
                     
                     # Launches flask app securely in background
                     nohup ${PYTHON_BIN} app.py > flask_app.log 2>&1 &
