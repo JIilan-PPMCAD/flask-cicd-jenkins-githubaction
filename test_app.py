@@ -1,14 +1,20 @@
 import pytest
+import mongomock
 from app import app, mongo
 from bson.objectid import ObjectId
 
 @pytest.fixture
 def client():
     app.config["TESTING"] = True
-    app.config["MONGO_URI"] = "mongodb://localhost:27017/test_student_db"  # test DB
+    
+    # 1. Intercept live MongoDB connections and redirect to an in-memory mock client
+    mock_client = mongomock.MongoClient()
+    mongo.cx = mock_client
+    mongo.db = mock_client['test_student_db']
+    
     client = app.test_client()
 
-    # Setup: clear and create test data
+    # 2. Setup: Clean existing workspace state and insert baseline seed dataset
     with app.app_context():
         mongo.db.students.delete_many({})
         mongo.db.students.insert_one({
@@ -17,11 +23,12 @@ def client():
             "email": "test@student.com",
             "course": "Flask"
         })
+        
     yield client
 
-    # Teardown: drop DB after test
+    # 3. Teardown: Clear workspace dataset (mock memory contexts drop automatically)
     with app.app_context():
-        mongo.cx.drop_database("test_student_db")
+        mongo.db.students.delete_many({})
 
 
 def test_home_page(client):
@@ -50,15 +57,16 @@ def test_update_student(client):
 
 def test_delete_student(client):
     """Test deleting a student"""
-    # Add a temporary student
+    # Use app_context to add a temporary record to the mocked database
     with app.app_context():
-        student_id = mongo.db.students.insert_one({
+        inserted = mongo.db.students.insert_one({
             "name": "Temp User",
             "email": "temp@user.com",
             "course": "Temp Course"
-        }).inserted_id
+        })
+        # FIX: Convert the BSON ObjectId into a plain string so the HTTP path is evaluated correctly
+        student_id = str(inserted.inserted_id)
 
     response = client.get(f'/delete/{student_id}', follow_redirects=True)
     assert response.status_code == 200
     assert b"Temp User" not in response.data
-
