@@ -11,7 +11,7 @@ pipeline {
         SECRET_KEY = "jenkins_automation_secret_key_proof"
         JENKINS_NODE_COOKIE = 'dontKillMe'
         
-        // RECIPIENT SETUP: Define who should receive your build notifications
+        // RECIPIENT CONFIGURATION: Swap this with your actual email address
         NOTIFICATION_EMAIL = "your-email@example.com"
     }
 
@@ -72,19 +72,20 @@ pipeline {
         }
     }
 
-    // UPDATED POST BLOCK FOR EMAIL ALERTS
     post {
         success {
             echo 'Pipeline completed successfully!'
-            mail to: "${env.NOTIFICATION_EMAIL}",
-                 subject: "SUCCESS: Jenkins Pipeline '${env.JOB_NAME}' (Build #${env.BUILD_ID})",
-                 body: "Great news! The pipeline completed successfully.\n\nView the full build details here: ${env.BUILD_URL}"
+            emailext to: "${env.NOTIFICATION_EMAIL}",
+                     subject: "SUCCESS: Jenkins Pipeline '${env.JOB_NAME}' (Build #${env.BUILD_ID})",
+                     body: "Great news! The pipeline completed successfully.\n\nView build details here: ${env.BUILD_URL}"
         }
         failure {
-            echo 'Pipeline failed. Check build logs.'
-            mail to: "${env.NOTIFICATION_EMAIL}",
-                 subject: "FAILURE: Jenkins Pipeline '${env.JOB_NAME}' (Build #${env.BUILD_ID})",
-                 body: "Attention required! The build or deployment has failed.\n\nCheck the console logs to debug: ${env.BUILD_URL}"
+            echo 'Pipeline failed. Sending alert email with runtime logs attached...'
+            emailext to: "${env.NOTIFICATION_EMAIL}",
+                     subject: "FAILURE: Jenkins Pipeline '${env.JOB_NAME}' (Build #${env.BUILD_ID})",
+                     body: "Attention required! The build or deployment has failed. Please review the attached flask_app.log file for runtime details.\n\nCheck the console output directly here: ${env.BUILD_URL}",
+                     // FIX: Finds and attaches the runtime log file from the workspace path
+                     attachmentsPattern: "flask_app.log"
         }
     }
 }
