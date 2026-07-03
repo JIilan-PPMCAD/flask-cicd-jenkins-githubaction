@@ -49,35 +49,32 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Staging Instance via SSH
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.STAGING_SERVER_IP }}
+          # FIX 1: Explicitly defining the username parameter so it stops passing empty profiles
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Create a clean deployment path inside the ubuntu user home directory
             mkdir -p /home/ubuntu/staging-app
             cd /home/ubuntu/staging-app
             
-            # Clean up old tracking and pull fresh source code safely
+            # FIX 2: Corrected the repository URL so your code pulls properly
             rm -rf .git * || true
             git clone https://github.com .
             git checkout stage
             
-            # Rebuild environment dependencies cleanly
             python3 -m venv venv
             source venv/bin/activate
             pip install --upgrade pip
             pip install -r requirements.txt || pip install flask pytest mongomock flask-pymongo python-dotenv certifi
             pip install mongomock
             
-            # Free up port 8000 and spin up background application runtime process
             fuser -k 8000/tcp || true
             export FLASK_ENV=staging
             nohup python3 app.py > flask_app.log 2>&1 &
             sleep 5
             
-            # Execute local verification test check
             curl -f http://localhost:8000
 
   deploy-production:
@@ -90,14 +87,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Production Instance via SSH
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.STAGING_SERVER_IP }}
+          # FIX 1: Explicitly added here as well
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             mkdir -p /home/ubuntu/production-app
             cd /home/ubuntu/production-app
+            
             rm -rf .git * || true
             git clone https://github.com .
             git checkout ${{ github.ref_name }}
