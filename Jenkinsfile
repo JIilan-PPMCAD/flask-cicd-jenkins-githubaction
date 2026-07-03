@@ -9,9 +9,10 @@ pipeline {
         
         MONGO_URI = "mongodb://localhost:27017/student_db"
         SECRET_KEY = "jenkins_automation_secret_key_proof"
-        
-        // FIX: Stops Jenkins from killing your background Flask server when the stage or step finishes
         JENKINS_NODE_COOKIE = 'dontKillMe'
+        
+        // RECIPIENT SETUP: Define who should receive your build notifications
+        NOTIFICATION_EMAIL = "your-email@example.com"
     }
 
     triggers {
@@ -30,8 +31,6 @@ pipeline {
                     else
                         ${PIP_BIN} install flask pytest python-dotenv flask-pymongo certifi
                     fi
-                    
-                    # Ensure mongomock is present for the isolated execution environment
                     ${PIP_BIN} install mongomock
                 '''
             }
@@ -42,7 +41,6 @@ pipeline {
                 echo 'Running Unit Tests...'
                 sh '''
                     if [ -f test_app.py ]; then
-                        # Clear wrapper dependencies to ensure real failure visibility
                         ${PYTEST_BIN} test_app.py
                     else
                         echo "No test file found, skipping suite..."
@@ -56,40 +54,37 @@ pipeline {
             steps {
                 echo 'Deploying Application to Staging Port 8000...'
                 sh '''
-                    # Safely stops old app processes running on port 8000
                     fuser -k 8000/tcp || true
-                    
-                    # Generates configuration parameters inside runtime path
                     echo "MONGO_URI='mongodb://localhost:27017/student_db'" > .env
                     echo "SECRET_KEY='jenkins_automation_secret_key_proof'" >> .env
-                    
-                    # Inject environment context flag to pivot the live app into mock-database execution mode
                     export FLASK_ENV=staging
                     
-                    # Launches flask app securely in background
                     nohup ${PYTHON_BIN} app.py > flask_app.log 2>&1 &
-                    
-                    # Give the server processes an explicit window to bind to port 8000
                     sleep 5
                     
-                    # Prints runtime startup log directly to Jenkins Console if execution fails
                     echo "--- Current Application Runtime Log Output ---"
                     cat flask_app.log || true
                     echo "----------------------------------------------"
                     
-                    # Verifies structural response profile via curl health check
                     curl -f http://localhost:8000 || exit 1
                 '''
             }
         }
     }
 
+    // UPDATED POST BLOCK FOR EMAIL ALERTS
     post {
         success {
             echo 'Pipeline completed successfully!'
+            mail to: "${env.NOTIFICATION_EMAIL}",
+                 subject: "SUCCESS: Jenkins Pipeline '${env.JOB_NAME}' (Build #${env.BUILD_ID})",
+                 body: "Great news! The pipeline completed successfully.\n\nView the full build details here: ${env.BUILD_URL}"
         }
         failure {
             echo 'Pipeline failed. Check build logs.'
+            mail to: "${env.NOTIFICATION_EMAIL}",
+                 subject: "FAILURE: Jenkins Pipeline '${env.JOB_NAME}' (Build #${env.BUILD_ID})",
+                 body: "Attention required! The build or deployment has failed.\n\nCheck the console logs to debug: ${env.BUILD_URL}"
         }
     }
 }
