@@ -12,7 +12,7 @@ pipeline {
         JENKINS_NODE_COOKIE = 'dontKillMe'
         
         // RECIPIENT CONFIGURATION: Swap this with your actual email address
-        NOTIFICATION_EMAIL = "your-email@example.com"
+        NOTIFICATION_EMAIL = "jilanshaik20@zohomail.in"
     }
 
     triggers {
