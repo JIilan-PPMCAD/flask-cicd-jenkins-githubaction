@@ -1,68 +1,90 @@
-# Student Registration System & CI/CD Platform
+# Student Registration System & Dual CI/CD Platform
 
-A robust **Flask** web application designed to manage student records, integrated into an automated Continuous Integration and Continuous Deployment (CI/CD) pipeline using **Jenkins** and **GitHub Actions** with **MongoDB** (mocked in-memory via `mongomock` for testing and staging deployment).
+A robust, enterprise-grade **Flask** web application designed to manage student registration records. The project features a comprehensive dual-pipeline infrastructure using **Jenkins** and **GitHub Actions** for multi-stage continuous validation, isolated unit testing, background execution controls, and email-based operational diagnostics.
 
 ---
 
 ## 🛠️ Tech Stack & Features
 
-*   **Core Application:** Python, Flask, Jinja2 Templates, Bootstrap 5.
-*   **Database Management:** MongoDB via `Flask-PyMongo` and `bson`.
-*   **Testing Layer:** In-memory automation database simulation via `mongomock`.
-*   **Automation Infrastructure:** Jenkins Pipeline Workspace Engine, GitHub Webhooks.
-*   **Notification Engine:** Extended Jenkins Mail Delivery Server (SMTP over SSL).
+*   **Core Application Framework:** Python 3, Flask, Jinja2 Templates, Bootstrap 5.
+*   **Database Management System:** MongoDB via `Flask-PyMongo` and `bson`.
+*   **Isolated Testing Layer:** In-memory automation database simulation via `mongomock`.
+*   **Jenkins CI/CD Infrastructure:** Pipeline Workspace Engine, GitHub Webhooks, Zoho Mail SMTP integrations.
+*   **GitHub Actions CI/CD Layer:** Native Linux runner workflows, encrypted repository secrets, SSH multi-port deployment tracking.
 
 ---
 
-## 🚀 Automated Pipeline Workflow
+## 🚀 Unified Pipeline Architecture Workflow
 
-1.  **Developer Push:** A commit is pushed to the GitHub repository main branch.
-2.  **Automated Webhook Trigger:** GitHub sends an instantaneous push event notification payload to the live Jenkins automation controller.
-3.  **Build Stage:** Jenkins sets up an isolated Python virtual environment and resolves application dependencies.
-4.  **Test Stage:** Execution of unit tests over an in-memory mock layout structure bypassing physical engine bounds.
-5.  **Deploy Stage:** Automated lifecycle termination of stale processes on port 8000 and subsequent deployment of the updated application build.
-6.  **Notification Block:** Generates email notifications with compressed operational log diagnostics attached (`flask_app.log`).
-
----
-
-## 🔧 Infrastructure & Platform Configurations
-
-### 1. Cloud Instance & Webhook Engine
-The application runs on an AWS Ubuntu EC2 node. GitHub repositories stream operational triggers directly into the platform core using an active automated webhook pipeline.
-
-![EC2 Server Management](Screenshots/Jenkins-CICD/ec2-jenkins.png)
-![Automated Webhook Configurations on GitHub](Screenshots/Jenkins-CICD/webhook-jenkins-cidjob.png)
-
-### 2. Jenkins Extended Mail Server Integration (Zoho Mail)
-To bypass outbound cloud port blocks and routing filters, Jenkins runs notifications through an encrypted Zoho India SMTP server setup:
-
-*   **SMTP Server Target Address:** `smtp.zoho.in`
-*   **Port Mapping:** `465` (Explicit SSL encryption)
-*   **System Admin Header Identity:** `jilanshaik20@zohomail.in`
-
-![Global Email Parameters Configuration](Screenshots/Jenkins-CICD/mail-config-jenkins.png)
-![Extended Credential and SSL Layer Mapping](Screenshots/Jenkins-CICD/mail-setup-test-config.png)
+1.  **Developer Push:** Code changes or formal version tags are pushed to the remote repository.
+2.  **Jenkins Automation Path:** 
+    *   GitHub webhooks trigger automated pipeline builds.
+    *   Creates an isolated virtual environment and resolves dependencies.
+    *   Executes mock testing sweeps.
+    *   Deploys updates cleanly and fires Zoho Mail alerting statuses.
+3.  **GitHub Actions Automation Path:** 
+    *   Pushes to the `stage` branch deploy to an isolated staging workspace path over port 8001.
+    *   Pushes of semantic version tags (`v*`) isolate and execute a production workspace layout over port 8002.
 
 ---
 
-## 📊 Pipeline Monitoring & Results
+## 🔧 Jenkins CI/CD Infrastructure Setup & Monitoring
 
-### 1. Execution Logs & Successful Deployment Results
-The unit tests utilize `mongomock` to evaluate the app state in memory, allowing them to pass successfully in less than a second. Once verified, the build step passes the health check on port 8000.
+### 1. Platform Infrastructure & Core Dashboards
+Our primary automation server is hosted on an AWS Ubuntu EC2 node, channeling incoming development triggers using a live Jenkins workspace project tracking dashboard view.
 
-![Pipeline Executions Overview Dashboard Layout](Screenshots/Jenkins-CICD/Job-statges.png)
-![Job Metrics on Commit Push Event](Screenshots/Jenkins-CICD/Jenkins-pipelinejob-triggered-onpush.png)
+![Jenkins Core Pipeline Dashboard Overview](Screenshots/Jenkins-CICD/Pipelen-Overview.png)
+![Active AWS EC2 Hosting Node Footprint](Screenshots/Jenkins-CICD/ec2-jenkins.png)
+
+### 2. Pipeline Webhooks & Execution Log Analytics
+Commits trigger instant platform runs, running unit tests and outputting verification records cleanly into the master log view.
+
+![Automated Webhook Sync Rules on GitHub Portal](Screenshots/Jenkins-CICD/webhook-jenkins-cicdjob.png)
+![Webhook Trigger Step Ingestion Handshake Metrics](Screenshots/Jenkins-CICD/Jenkins-pipelinejob-triggered-onpush.png)
+![Successful Build Ingestion Verification Tracker Node Logs](Screenshots/Jenkins-CICD/Jenkins-pipelinejob-triggered-onpush-suceess.png)
+![Jenkins Multi-Stage Status Monitor Dashboard Layout](Screenshots/Jenkins-CICD/Job-statges.png)
 ![Console Build History Complete Log Dump Output](Screenshots/Jenkins-CICD/Jenkins-pipelinejob-console-log.png)
 
 ---
 
-## 🤖 GitHub Actions Pipeline Monitoring (Upcoming)
+## 📧 Jenkins Automated Mail Alerts Configuration
 
-This section acts as a technical placeholder for the secondary CI layer managed via internal GitHub workflow runners.
+To bypass traditional cloud port filtering and establish instant failure visibility, automated pipeline communications navigate safely via an encrypted Zoho SMTP relay channel using an authorized App Password configuration. If a build breaks, the pipeline attaches compressed operational log diagnostics (`flask_app.log`) directly to the outgoing delivery queue.
 
-*   **GitHub Actions Workspace Location:** Images tracking individual matrix workflows will be uploaded here.
-*   *[Placeholder for GitHub Action Step 1 Visual layout tracking log screenshots...]*
-*   *[Placeholder for GitHub Action Step 2 Visual layout tracking log screenshots...]*
+### Global SMTP Integration & Zoho Setup
+*   **SMTP Server Target Address:** `smtp.zoho.in`
+*   **Secure Routing Port:** `465` (SSL Active)
+*   **System Identity Header / From:** `jilanshaik20@zohomail.in`
+
+![Extended Email Parameter Adjustments](Screenshots/Jenkins-CICD/mail-config-jenkins.png)
+![Secure Credential Configuration and SSL Layer Verification Mapping](Screenshots/Jenkins-CICD/mail-setup-test-config.png)
+![Zoho Secure Portal App Password Token Authorization Generation](Screenshots/Jenkins-CICD/zohomail-app-password.png)
+![Zoho Delivery Queue Extended Mail Attachment Delivery Receipt](Screenshots/Jenkins-CICD/Suceess_failer_mail_alerts.png)
+
+---
+
+## 🤖 GitHub Actions Pipeline Monitoring
+
+This secondary CI/CD infrastructure manages branch isolation and executes standalone validation parameters without causing port collisions on the hosting EC2 instance.
+
+### 1. Workflow Security & Environment Branching
+Infrastructure configuration addresses are protected via GitHub Encrypted Secrets, enabling automated environment routing based on branch metrics.
+
+![Configured GitHub Actions Pipeline Secrets](Screenshots/GitHub-Actions/github-action-secrets.png)
+![GitHub Repository Branch Networking Model](Screenshots/GitHub-Actions/github-branhes.png)
+
+### 2. Continuous Integration & Unit Testing Logs
+The pipeline builds an isolated execution matrix layer for each push, running dependency validation steps and your `pytest` suite in parallel.
+
+![Automated pip Install Dependencies Step Logs](Screenshots/GitHub-Actions/install-dependencies.png)
+![Isolated Pytest Verification Test Suite Output](Screenshots/GitHub-Actions/Run-Test-suite.png)
+
+### 3. Continuous Deployment & Releases Dashboard
+When changes land on the `stage` branch, the app deploys to the staging server over port 8001. Pushing formal version tags triggers a separate production environment deployment tracking thread running on port 8002.
+
+![Staging and Production Pipeline Deployment History Status](Screenshots/GitHub-Actions/Deployement_dashboard.png)
+![Repository Release Pinned Tags Track Logs](Screenshots/GitHub-Actions/Tags.png)
+![Production Tag Packages Delivery Status Dashboard](Screenshots/GitHub-Actions/Releases.png)
 
 ---
 
