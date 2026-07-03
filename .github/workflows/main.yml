@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - main
-      - staging
+      - stage
     tags:
       - 'v*' # Triggers production deployment on version tags like v1.0.0
   pull_request:
     branches:
       - main
-      - staging
+      - stage
 
 jobs:
   build-and-test:
@@ -42,7 +42,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging Environment
     needs: build-and-test
-    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/stage' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -56,9 +56,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/lib/jenkins/workspace/flask-cicd-jenkins-githubaction
-            git fetch origin staging
-            git checkout staging
-            git pull origin staging
+            git fetch origin stage
+            git checkout stage
+            git pull origin stage
             source venv/bin/activate
             fuser -k 8000/tcp || true
             export FLASK_ENV=staging
