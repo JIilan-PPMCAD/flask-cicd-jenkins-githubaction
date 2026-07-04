@@ -59,7 +59,7 @@ jobs:
             
             rm -rf .git * || true
             
-            # FIXED: Inserted your precise repository clone URL path
+           # FIXED: Inserted your precise repository clone URL path
             git clone https://github.com/JIilan-PPMCAD/flask-cicd-jenkins-githubaction.git .
             git checkout stage
             
@@ -77,4 +77,40 @@ jobs:
             curl -f http://localhost:8000
           EOF
 
+      # =========================================================================
+      # STEP 1: DOWNLOAD FLASK LOG FILE FROM EC2 TO RUNNER
+      # =========================================================================
+      - name: Download Runtime Log File from EC2 Server
+        if: always() # Ensures logs are grabbed even if the deployment steps crash
+        run: |
+          scp -i ~/.ssh/id_rsa ubuntu@${{ secrets.STAGING_SERVER_IP }}:/home/ubuntu/staging-app/flask_app.log ./flask_app.log || echo "Log file not found on server" > ./flask_app.log
 
+      # =========================================================================
+      # STEP 2: SEND EMAIL NOTIFICATION WITH ATTACHMENT
+      # =========================================================================
+      - name: Send Email Notification via Zoho Mail
+        if: always()
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.zoho.in
+          server_port: 465
+          secure: true
+          username: jilanshaik20@zohomail.in
+          password: ${{ secrets.ZOHO_MAIL_PASSWORD }}
+          subject: "GitHub Actions: Staging Deployment Status is ${{ job.status }}!"
+          to: jilanshaik20@zohomail.in
+          from: GitHub Actions Pipeline <jilanshaik20@zohomail.in>
+          # FIXED: Attaches the pulled server log file directly to your email
+          attachments: ./flask_app.log
+          body: |
+            Hello,
+            
+            The GitHub Actions deployment pipeline job has completed execution for STAGING.
+            
+            - Repository: ${{ github.repository }}
+            - Branch/Ref: ${{ github.ref_name }}
+            - Execution Status: ${{ job.status }}
+            
+            The runtime application diagnostic log (flask_app.log) has been attached to this email.
+            
+            Review full workflow logs directly here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
