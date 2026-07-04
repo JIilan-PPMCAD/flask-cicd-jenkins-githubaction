@@ -1,6 +1,6 @@
 # Student Registration System & Dual CI/CD Platform
 
-A robust, enterprise-grade **Flask** web application designed to manage student registration records. The project features a comprehensive dual-pipeline infrastructure using **Jenkins** and **GitHub Actions** for multi-stage continuous validation, isolated unit testing, background execution controls, and email-based operational diagnostics.
+The project features a comprehensive dual-pipeline infrastructure using **Jenkins** and **GitHub Actions** for multi-stage continuous validation, isolated unit testing, background execution controls, and email-based operational diagnostics.
 
 ---
 
@@ -47,7 +47,7 @@ Commits trigger instant platform runs, running unit tests and outputting verific
 
 ---
 
-## 📧 Jenkins Automated Mail Alerts Configuration
+## 📧 Task Proof: Jenkins Automated Zoho Mail Alerts
 
 To bypass traditional cloud port filtering and establish instant failure visibility, automated pipeline communications navigate safely via an encrypted Zoho SMTP relay channel using an authorized App Password configuration. If a build breaks, the pipeline attaches compressed operational log diagnostics (`flask_app.log`) directly to the outgoing delivery queue.
 
@@ -59,32 +59,53 @@ To bypass traditional cloud port filtering and establish instant failure visibil
 ![Extended Email Parameter Adjustments](Screenshots/Jenkins-CICD/mail-config-jenkins.png)
 ![Secure Credential Configuration and SSL Layer Verification Mapping](Screenshots/Jenkins-CICD/mail-setup-test-config.png)
 ![Zoho Secure Portal App Password Token Authorization Generation](Screenshots/Jenkins-CICD/zohomail-app-password.png)
+
+### Final Delivery Verification Receipt
+The snapshot below confirms the automated dispatch and receipt of delivery updates within the verified Zoho mailbox structure:
+
 ![Zoho Delivery Queue Extended Mail Attachment Delivery Receipt](Screenshots/Jenkins-CICD/Suceess_failer_mail_alerts.png)
 
 ---
 
 ## 🤖 GitHub Actions Pipeline Monitoring
 
-This secondary CI/CD infrastructure manages branch isolation and executes standalone validation parameters without causing port collisions on the hosting EC2 instance.
+This secondary CI/CD infrastructure manages branch isolation, runs parallel automated test jobs, and establishes an active alert communication layer to provide status notifications directly to Zoho Mail.
 
-### 1. Workflow Security & Environment Branching
-Infrastructure configuration addresses are protected via GitHub Encrypted Secrets, enabling automated environment routing based on branch metrics.
+### 1. Workflow Security, Variables, & Branch Layouts
+Network destination addresses and key codes are protected under encrypted repository context variables, establishing secure operational execution fields based on branch labels.
 
 ![Configured GitHub Actions Pipeline Secrets](Screenshots/GitHub-Actions/github-action-secrets.png)
 ![GitHub Repository Branch Networking Model](Screenshots/GitHub-Actions/github-branhes.png)
 
-### 2. Continuous Integration & Unit Testing Logs
-The pipeline builds an isolated execution matrix layer for each push, running dependency validation steps and your `pytest` suite in parallel.
+### 2. Parallel Integration and Test Matrix Runs
+Every code change launches an isolated tracking instance, downloading application modules and running your complete `pytest` validation suite before approving the step.
 
 ![Automated pip Install Dependencies Step Logs](Screenshots/GitHub-Actions/install-dependencies.png)
 ![Isolated Pytest Verification Test Suite Output](Screenshots/GitHub-Actions/Run-Test-suite.png)
 
-### 3. Continuous Deployment & Releases Dashboard
-When changes land on the `stage` branch, the app deploys to the staging server over port 8001. Pushing formal version tags triggers a separate production environment deployment tracking thread running on port 8002.
+### 3. Native Deployment Handshakes & Release Tracking
+Upon validation of dependencies, the pipeline triggers clean deployment scripts over independent hosting ports (`8001` and `8002`) via native SSH routing.
 
 ![Staging and Production Pipeline Deployment History Status](Screenshots/GitHub-Actions/Deployement_dashboard.png)
+![Staging Branch Native Connection Handshake & Script Executions Log](Screenshots/GitHub-Actions/github-actions-staging-run-suceess.png)
 ![Repository Release Pinned Tags Track Logs](Screenshots/GitHub-Actions/Tags.png)
 ![Production Tag Packages Delivery Status Dashboard](Screenshots/GitHub-Actions/Releases.png)
+
+---
+
+## 📨 Task Proof: GitHub Actions Automated Zoho Mail Alerts
+
+To establish parity with the Jenkins infrastructure setup, an automated notification step utilizing the `dawidd6/action-send-mail@v4` library was integrated into the GitHub workflow engine. Using an encrypted repository token context (`secrets.ZOHO_MAIL_PASSWORD`), the runner extracts the runtime application diagnostic log (`flask_app.log`) from the host EC2 engine using secure copy routines (`scp`) and fires an automated status update to the engineering team.
+
+### Runner Workflow Execution Logs
+The console stream below highlights the successful assembly of the outbound SMTP envelope and the integration of attachment parameters:
+
+![GitHub Actions Automated Outbound Email Alerts Step Logs](Screenshots/GitHub-Actions/github-actions-mail-notifcation-alerts.png)
+
+### Final Delivery Verification Receipt
+The screenshot below acts as a conclusive task check, validating that the GitHub Actions build runner managed to pass outer security layers and drop the active environment log right into the Zoho Inbox:
+
+![GitHub Actions Staging and Production Success Notification Email Receipt](Screenshots/GitHub-Actions/githubaction-success-mail-alert.png)
 
 ---
 
